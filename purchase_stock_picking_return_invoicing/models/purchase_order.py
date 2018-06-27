@@ -3,6 +3,7 @@
 # Copyright 2018 Tecnativa - Pedro M. Baeza
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from collections import defaultdict
 from odoo import api, fields, models
 
 
@@ -129,33 +130,32 @@ class PurchaseOrderLine(models.Model):
     def _compute_qty_returned(self):
         """Made through read_group for not impacting in performance."""
         ProductUom = self.env['product.uom']
-        StockMove = self.env['stock.move']
-        groups = StockMove.read_group(
+        groups = self.env['stock.move'].read_group(
             [('origin_returned_move_id.purchase_line_id', 'in', self.ids),
              ('state', '=', 'done'),
              ('location_id.usage', '!=', 'supplier')],
             ['origin_returned_move_id', 'product_uom_qty', 'product_uom'],
             ['origin_returned_move_id', 'product_uom'], lazy=False,
         )
-        p = self._prefetch
-        # load all moves records at once on first access
-        origin_move_ids = set(g['origin_returned_move_id'][0] for g in groups)
-        StockMove.browse(origin_move_ids).with_prefetch(p)
-        # load all UoM records at once on first access
-        uom_ids = set(g['product_uom'][0] for g in groups)
-        ProductUom.browse(list(uom_ids)).with_prefetch(p)
-        line_qtys = {}
+        group_dict = defaultdict(list)
+        uom_ids = set()
         for g in groups:
-            uom = ProductUom.browse(g["product_uom"][0]).with_prefetch(p)
-            move = StockMove.browse(
-                g['origin_returned_move_id'][0]
-            ).with_prefetch(p)
-            line_qtys.setdefault(move.purchase_line_id.id, 0)
-            line_qtys[move.purchase_line_id.id] += uom._compute_quantity(
-                g["product_uom_qty"], move.purchase_line_id.product_uom,
+            group_dict[g['origin_returned_move_id'][0]].append(
+                (g['product_uom'][0], g['product_uom_qty'])
             )
+            uom_ids.add(g['product_uom'][0])
+        p = self._prefetch
+        # load all UoM records at once on first access
+        ProductUom.browse(list(uom_ids), prefetch=p)
         for line in self:
-            line.qty_returned = line_qtys.get(line.id, 0)
+            qty = 0.0
+            for gl in group_dict[line.id]:
+                if gl[0] == line.product_uom.id:
+                    qty += gl[1]
+                else:
+                    uom = ProductUom.browse(gl[0], prefetch=p)
+                    qty += uom._compute_quantity(gl[1], line.product_uom)
+            line.qty_returned = qty
 
     @api.depends('qty_returned')
     def _compute_qty_received(self):
