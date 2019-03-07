@@ -10,6 +10,7 @@ class TestSaleTimesheetDescription(common.SavepointCase):
     def setUpClass(cls):
         super(TestSaleTimesheetDescription, cls).setUpClass()
         # Make sure user is in English
+        cls.env['res.lang'].load_lang('en_US')
         cls.env.user.lang = 'en_US'
         cls.partner = cls.env['res.partner'].create({
             'name': 'Test partner',
@@ -33,7 +34,7 @@ class TestSaleTimesheetDescription(common.SavepointCase):
                 (0, 0, {
                     'name': cls.product.name,
                     'product_id': cls.product.id,
-                    'product_uom_qty': 5,
+                    'product_uom_qty': 10.5,
                     'product_uom': cls.product.uom_id.id,
                     'price_unit': cls.product.list_price,
                 }),

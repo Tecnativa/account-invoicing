@@ -1,7 +1,7 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * account_invoice_supplier_self_invoice
-# 
+#
 # Translators:
 # OCA Transbot <transbot@odoo-community.org>, 2018
 # Quentin THEURET <odoo@kerpeo.com>, 2018
@@ -13,10 +13,10 @@ msgstr ""
 "PO-Revision-Date: 2018-02-03 01:13+0000\n"
 "Last-Translator: Quentin THEURET <odoo@kerpeo.com>, 2018\n"
 "Language-Team: French (https://www.transifex.com/oca/teams/23907/fr/)\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. module: account_invoice_supplier_self_invoice
@@ -112,6 +112,12 @@ msgid "Email:"
 msgstr "Courriel :"
 
 #. module: account_invoice_supplier_self_invoice
+#: model:ir.model.fields,help:account_invoice_supplier_self_invoice.field_res_partner_self_invoice_report_footer
+#: model:ir.model.fields,help:account_invoice_supplier_self_invoice.field_res_users_self_invoice_report_footer
+msgid "Footer text displayed at the bottom of the self invoice reports."
+msgstr ""
+
+#. module: account_invoice_supplier_self_invoice
 #: model:ir.model,name:account_invoice_supplier_self_invoice.model_account_invoice
 #: model:ir.ui.view,arch_db:account_invoice_supplier_self_invoice.report_invoice_self_document
 msgid "Invoice"
@@ -146,6 +152,13 @@ msgstr "Facture propre"
 #. module: account_invoice_supplier_self_invoice
 #: model:ir.model.fields,field_description:account_invoice_supplier_self_invoice.field_account_invoice_self_invoice_number
 msgid "Self Invoice Number"
+msgstr "Numéro de factures propres"
+
+#. module: account_invoice_supplier_self_invoice
+#: model:ir.model.fields,field_description:account_invoice_supplier_self_invoice.field_res_partner_self_invoice_report_footer
+#: model:ir.model.fields,field_description:account_invoice_supplier_self_invoice.field_res_users_self_invoice_report_footer
+#, fuzzy
+msgid "Self invoice footer"
 msgstr "Numéro de factures propres"
 
 #. module: account_invoice_supplier_self_invoice
@@ -205,5 +218,5 @@ msgstr "Site internet :"
 #: model:ir.model.fields,help:account_invoice_supplier_self_invoice.field_res_users_self_invoice
 msgid "When checked, all invoices will generate a self-invoice on validation"
 msgstr ""
-"Quand elle est cochée, toutes les factures vont générer une facture propre à"
-" la validation"
+"Quand elle est cochée, toutes les factures vont générer une facture propre à "
+"la validation"
