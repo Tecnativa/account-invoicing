@@ -10,6 +10,7 @@ class AccountInvoice(models.Model):
 
     validation_job_ids = fields.Many2many(
         comodel_name='queue.job',
+        relation="account_invoice_validation_job_rel",
         column1='invoice_id',
         column2='job_id',
         string="Validation Jobs",

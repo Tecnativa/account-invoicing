@@ -3,7 +3,7 @@
 
 {
     'name': 'Enqueue account invoice validation',
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.1.0',
     'category': 'Accounting',
     'license': 'AGPL-3',
     'author': 'Tecnativa, '
