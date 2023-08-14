@@ -1,48 +1,52 @@
 # Copyright 2019 Tecnativa - David Vidal
 # Copyright 2020 Tecnativa - Pedro M. Baeza
-# Copyright 2021 Tecnativa - Víctor Martínez
+# Copyright 2021-2023 Tecnativa - Víctor Martínez
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from odoo import exceptions
-from odoo.tests import Form, common
+from odoo.tests import Form, tagged
+
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 
-class TestGlobalDiscount(common.TransactionCase):
+@tagged("post_install", "-at_install")
+class TestGlobalDiscount(AccountTestInvoicingCommon):
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.account_type = cls.env["account.account.type"].create(
-            {"name": "Test", "type": "other", "internal_group": "income"}
-        )
-        cls.account = cls.env["account.account"].create(
-            {
-                "name": "Test account",
-                "code": "TEST",
-                "user_type_id": cls.account_type.id,
-                "reconcile": True,
-            }
-        )
-        cls.account_type_receivable = cls.env["account.account.type"].create(
-            {"name": "Test", "type": "receivable", "internal_group": "income"}
-        )
-        cls.account_receivable = cls.env["account.account"].create(
-            {
-                "name": "Test receivable account",
-                "code": "ACCRV",
-                "user_type_id": cls.account_type_receivable.id,
-                "reconcile": True,
-            }
-        )
-        cls.account_type_payable = cls.env["account.account.type"].create(
-            {"name": "Test", "type": "payable", "internal_group": "income"}
-        )
-        cls.account_payable = cls.env["account.account"].create(
-            {
-                "name": "Test receivable account",
-                "code": "ACCPAY",
-                "user_type_id": cls.account_type_payable.id,
-                "reconcile": True,
-            }
-        )
+    def setUpClass(cls, chart_template_ref=None):
+        super().setUpClass(chart_template_ref=chart_template_ref)
+        # cls.account_type = cls.env["account.account.type"].create(
+        #     {"name": "Test", "type": "other", "internal_group": "income"}
+        # )
+        # cls.account = cls.env["account.account"].create(
+        #     {
+        #         "name": "Test account",
+        #         "code": "TEST",
+        #         "user_type_id": cls.account_type.id,
+        #         "reconcile": True,
+        #     }
+        # )
+        # cls.account_type_receivable = cls.env["account.account.type"].create(
+        #     {"name": "Test", "type": "receivable", "internal_group": "income"}
+        # )
+        # cls.account_receivable = cls.env["account.account"].create(
+        #     {
+        #         "name": "Test receivable account",
+        #         "code": "ACCRV",
+        #         "user_type_id": cls.account_type_receivable.id,
+        #         "reconcile": True,
+        #     }
+        # )
+        # cls.account_type_payable = cls.env["account.account.type"].create(
+        #     {"name": "Test", "type": "payable", "internal_group": "income"}
+        # )
+        # cls.account_payable = cls.env["account.account"].create(
+        #     {
+        #         "name": "Test receivable account",
+        #         "code": "ACCPAY",
+        #         "user_type_id": cls.account_type_payable.id,
+        #         "reconcile": True,
+        #     }
+        # )
+        cls.account = cls.company_data["default_account_revenue"]
         cls.global_discount_obj = cls.env["global.discount"]
         cls.global_discount_1 = cls.global_discount_obj.create(
             {
@@ -71,20 +75,22 @@ class TestGlobalDiscount(common.TransactionCase):
                 "sequence": 1,
             }
         )
-        cls.partner_1 = cls.env["res.partner"].create(
-            {
-                "name": "Mr. Odoo",
-                "property_account_receivable_id": cls.account_receivable.id,
-                "property_account_payable_id": cls.account_payable.id,
-            }
-        )
-        cls.partner_2 = cls.env["res.partner"].create(
-            {
-                "name": "Mrs. Odoo",
-                "property_account_receivable_id": cls.account_receivable.id,
-                "property_account_payable_id": cls.account_payable.id,
-            }
-        )
+        # cls.partner_1 = cls.env["res.partner"].create(
+        #     {
+        #         "name": "Mr. Odoo",
+        #         "property_account_receivable_id": cls.account_receivable.id,
+        #         "property_account_payable_id": cls.account_payable.id,
+        #     }
+        # )
+        # cls.partner_2 = cls.env["res.partner"].create(
+        #     {
+        #         "name": "Mrs. Odoo",
+        #         "property_account_receivable_id": cls.account_receivable.id,
+        #         "property_account_payable_id": cls.account_payable.id,
+        #     }
+        # )
+        cls.partner_1 = cls.partner_a
+        cls.partner_2 = cls.partner_b
         cls.partner_2.supplier_global_discount_ids = cls.global_discount_2
         cls.tax = cls.env["account.tax"].create(
             {
@@ -102,9 +108,9 @@ class TestGlobalDiscount(common.TransactionCase):
                 "amount": 0.0,
             }
         )
-        cls.journal = cls.env["account.journal"].create(
-            {"name": "Test purchase journal", "code": "TPUR", "type": "purchase"}
-        )
+        # cls.journal = cls.env["account.journal"].create(
+        #     {"name": "Test purchase journal", "code": "TPUR", "type": "purchase"}
+        # )
         cls.invoice_line = cls.env["account.move.line"]
         invoice_form = Form(
             cls.env["account.move"].with_context(
