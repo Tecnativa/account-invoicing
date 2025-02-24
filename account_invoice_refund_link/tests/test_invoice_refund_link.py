@@ -2,17 +2,27 @@
 # Copyright 2014-2023 Tecnativa - Pedro M. Baeza
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo.tests.common import TransactionCase
+from odoo import SUPERUSER_ID, api, registry
+from odoo.tests import get_db_name, tagged
+
+from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
 from .. import post_init_hook
 
 
-class TestInvoiceRefundLinkBase(TransactionCase):
+@tagged("post_install", "-at_install")
+class TestInvoiceRefundLinkBase(AccountTestInvoicingCommon):
     refund_method = "refund"
 
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+    def setUpClass(cls, chart_template_ref=None):
+        with registry(get_db_name()).cursor() as cr:
+            env = api.Environment(cr, SUPERUSER_ID, {})
+            if not env.ref("l10n_generic_coa.configurable_chart_template", False):
+                # Fallback for executing tests in any existing CoA
+                coa = env["account.chart.template"].search([("visible", "=", True)])[:1]
+                chart_template_ref = coa.get_external_id()[coa.id]
+        super().setUpClass(chart_template_ref=chart_template_ref)
         cls.env = cls.env(
             context=dict(
                 cls.env.context,
@@ -23,39 +33,13 @@ class TestInvoiceRefundLinkBase(TransactionCase):
                 tracking_disable=True,
             )
         )
-        cls.partner = cls.env["res.partner"].create({"name": "Test partner"})
-        default_line_account = cls.env["account.account"].create(
-            {
-                "name": "TESTACC",
-                "code": "TESTACC",
-                "account_type": "income",
-                "deprecated": False,
-                "company_id": cls.env.user.company_id.id,
-            }
-        )
-        cls.journal = cls.env["account.journal"].create(
-            {
-                "name": "Journal 1",
-                "code": "J1",
-                "type": "sale",
-                "company_id": cls.env.user.company_id.id,
-            }
-        )
         cls.invoice_lines = [
-            (
-                0,
-                False,
-                {
-                    "name": "Test section",
-                    "display_type": "line_section",
-                },
-            ),
+            (0, False, {"name": "Test section", "display_type": "line_section"}),
             (
                 0,
                 False,
                 {
                     "name": "Test description #1",
-                    "account_id": default_line_account.id,
                     "quantity": 1.0,
                     "price_unit": 100.0,
                 },
@@ -65,7 +49,6 @@ class TestInvoiceRefundLinkBase(TransactionCase):
                 False,
                 {
                     "name": "Test description #2",
-                    "account_id": default_line_account.id,
                     "quantity": 2.0,
                     "price_unit": 25.0,
                 },
@@ -73,7 +56,7 @@ class TestInvoiceRefundLinkBase(TransactionCase):
         ]
         cls.invoice = cls.env["account.move"].create(
             {
-                "partner_id": cls.partner.id,
+                "partner_id": cls.partner_a.id,
                 "move_type": "out_invoice",
                 "invoice_line_ids": cls.invoice_lines,
             }
@@ -86,7 +69,7 @@ class TestInvoiceRefundLinkBase(TransactionCase):
             {
                 "refund_method": cls.refund_method,
                 "reason": cls.refund_reason,
-                "journal_id": cls.journal.id,
+                "journal_id": cls.company_data["default_journal_sale"].id,
             }
         ).reverse_moves()
 
